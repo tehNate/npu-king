@@ -1,0 +1,32 @@
+name: Android CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # GitHub-hosted ubuntu runners ship with the Android SDK. Do not use
+      # android-actions/setup-android here: its default `sdkmanager tools`
+      # package is no longer published and fails the job.
+      - name: Build debug APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: npu-king-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
